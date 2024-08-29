@@ -47,6 +47,7 @@
     "rtpengine-client": "^0.4.12",
     "sdp-transform": "^2.14.1",
     "uuid": "^8.3.2",
+    "ws": "^8.18.0",
     "xml2js": "^0.6.2"
   }
 }
