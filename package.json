@@ -38,6 +38,7 @@
   "dependencies": {
     "config": "^1.31.0",
     "debug": "^3.2.7",
+    "dotenv": "^16.4.5",
     "drachtio-srf": "^4.5.28",
     "eslint": "^7.17.0",
     "eslint-plugin-promise": "^4.2.1",
