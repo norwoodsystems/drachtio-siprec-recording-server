@@ -20,20 +20,25 @@ else {
 
 if (config.has('rtpengine')) {
   logger.info(config.get('rtpengine'), 'using rtpengine as the recorder');
-  callHandler = require('./lib/rtpengine-call-handler');
-  // start DTMF listener
-  require('./lib/dtmf-event-handler')(logger);
+  try {
+    callHandler = require('./lib/rtpengine-call-handler');
+    // start DTMF listener
+    require('./lib/dtmf-event-handler')(logger);
 
-  // we only want to deal with siprec invites (having multipart content) in this application
-  srf.use('invite', (req, res, next) => {
-    const ctype = req.get('Content-Type') || '';
-    if (!ctype.includes('multipart/mixed')) {
-      logger.info(`rejecting non-SIPREC INVITE with call-id ${req.get('Call-ID')}`);
-      return res.send(488);
-    }
-    next();
-  });
-
+    // we only want to deal with siprec invites (having multipart content) in this application
+    srf.use('invite', (req, res, next) => {
+      const ctype = req.get('Content-Type') || '';
+      if (!ctype.includes('multipart/mixed')) {
+        logger.info(`rejecting non-SIPREC INVITE with call-id ${req.get('Call-ID')}`);
+        return res.send(488);
+      }
+      next();
+    });
+  } catch (error) {
+    logger.error({ error }, 'Error from rtpengine: ${error.message}');
+    // Fallback to a default handler or exit gracefully
+    process.exit(1);
+  }
 }
 else if (config.has('freeswitch')) {
   logger.info(config.get('freeswitch'), 'using freeswitch as the recorder');
