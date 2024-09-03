@@ -34,10 +34,18 @@ if (config.has('rtpengine')) {
       }
       next();
     });
+
+    // Add error handling for rtpengine timeout
+    srf.on('error', (err) => {
+      logger.error({ error: err }, 'An error occurred in SRF');
+    });
   } catch (error) {
-    logger.error({ error }, 'Error from rtpengine: ${error.message}');
-    // Fallback to a default handler or exit gracefully
-    process.exit(1);
+    logger.error({ error }, `Error initializing rtpengine: ${error.message}`);
+    // Implement fallback logic here instead of exiting
+    callHandler = (req, res) => {
+      logger.warn('Using fallback call handler due to rtpengine initialization error');
+      res.send(500);
+    };
   }
 }
 else if (config.has('freeswitch')) {
@@ -48,6 +56,14 @@ else {
   assert('recorder type not specified in configuration: must be either rtpengine or freeswitch');
 }
 
-srf.invite(callHandler);
+// Modify the srf.invite call to include error handling
+srf.invite((req, res) => {
+  try {
+    callHandler(req, res);
+  } catch (error) {
+    logger.error({ error, callId: req.get('Call-ID') }, 'Error in call handler');
+    res.send(500);
+  }
+});
 
 module.exports = srf;
